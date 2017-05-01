@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <!-- Viewport Meta Tag -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>美国大学校园犯罪数据</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js">
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="jumbotron">
+                    <h1>{{school_name}}</h1>
+                    <h2>{{branch_name}} 校园安全报告</h2>
+                    <small>数据来源: 美国政府相关部门和研究机构 2009-2014</small>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3>学校概况</h3>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table">
+                            <tbody>
+                                <tr>
+                                    <th>学校名称</th>
+                                    <td>{{school_name}}</td>
+                                </tr>
+                                <tr>
+                                    <th>校区</th>
+                                    <td>{{branch_name}}</td>
+                                </tr>
+                                <tr>
+                                    <th>地址</th>
+                                    <td>{{address}}</td>
+                                </tr>
+                                <tr>
+                                    <th>所在城市</th>
+                                    <td>{{city}}</td>
+                                </tr>
+                                <tr>
+                                    <th>所在州</th>
+                                    <td>{{state}}</td>
+                                </tr>
+                                <tr>
+                                    <th>邮编</th>
+                                    <td>{{zipcode}}</td>
+                                </tr>
+                                <tr>
+                                    <th>学制</th>
+                                    <td>{{sector}}</td>
+                                </tr>
+                                <tr>
+                                    <th>学生总人数</th>
+                                    <td>{{total_student}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3>学生性别比例</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart01">
+                            <canvas id="genderChart" width="200" height="100"> </canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3>每年校园犯罪总数(2009-2014年)</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart01">
+                            <canvas id="YearlyChart" width="200" height="100"> </canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3>犯罪类型 (2014年)</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart01">
+                            <canvas id="CrimeTypeChart" width="200" height="100"> </canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3>犯罪趋势 (2012-2014年)</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="chart01">
+                            <canvas id="CrimeTrendChart" width="200" height="100"> </canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    var DoughnutOptions = {
+        events: false,
+        animation: {
+          duration: 500,
+          easing: "easeOutQuart",
+          onComplete: function () {
+            var ctx = this.chart.ctx;
+            ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontFamily, 'normal', Chart.defaults.global.defaultFontFamily);
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            this.data.datasets.forEach(function (dataset) {
+
+              for (var i = 0; i < dataset.data.length; i++) {
+                var model = dataset._meta[Object.keys(dataset._meta)[0]].data[i]._model,
+                    total = dataset._meta[Object.keys(dataset._meta)[0]].total,
+                    mid_radius = model.innerRadius + (model.outerRadius - model.innerRadius)/2,
+                    start_angle = model.startAngle,
+                    end_angle = model.endAngle,
+                    mid_angle = start_angle + (end_angle - start_angle)/2;
+
+                var x = mid_radius * Math.cos(mid_angle);
+                var y = mid_radius * Math.sin(mid_angle);
+
+                ctx.fillStyle = '#fff';
+                if (i == 3){ // Darker text color for lighter background
+                  ctx.fillStyle = '#444';
+                }
+                var percent = String(Math.round(dataset.data[i]/total*100)) + "%";
+                ctx.fillText(dataset.data[i], model.x + x, model.y + y);
+                // Display percent in another line, line break doesn't work for fillText
+                ctx.fillText(percent, model.x + x, model.y + y + 15);
+              }
+            });
+          }
+        }
+      };
+    var ctx = document.getElementById("genderChart").getContext('2d');
+    var genderChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+    labels: {{labels|safe}},
+    datasets: [{
+    backgroundColor: {{colors|safe}},
+    data: {{values|safe}}
+    }]
+        },
+    options: DoughnutOptions
+    });
+    // the data for the yearly total crime bar plot
+    var yearly_crime_data = {
+    labels: {{year_label|safe}},
+    datasets: [
+        {
+            label: "每年犯罪总数",
+            backgroundColor: [
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(54, 162, 235, 0.2)'
+            ],
+            borderColor: [
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(54, 162, 235, 1)'
+            ],
+            borderWidth: 1,
+            data: {{crimes_per_year|safe}},
+        }
+    ]
+    };
+    var ctx1 = document.getElementById("YearlyChart").getContext('2d');
+    var YearlyChart = new Chart(ctx1, {
+    type: "bar",
+    data: yearly_crime_data,
+    options: {
+        scales: {
+            xAxes: [{
+                stacked: true
+            }],
+            yAxes: [{
+                stacked: true
+            }]
+        }
+    }
+});
+// Plot the crime type graph for the latest year
+var ctx2 = document.getElementById("CrimeTypeChart").getContext('2d');
+var CrimeTypeChart = new Chart(ctx2, {
+type: 'doughnut',
+data: {
+labels: {{crime_labels|safe}},
+datasets: [{
+backgroundColor: [
+    'rgba(255,99,132,0.8)',
+    'rgba(54, 162, 235, 0.8)',
+    'rgba(255, 206, 86, 0.8)',
+    'rgba(75, 192, 192, 0.8)',
+    'rgba(153, 102, 255, 0.8)',
+    'rgba(255, 159, 64, 0.8)',
+    'rgba(71, 209, 71, 0.8)',
+    'rgba(255, 105, 86, 0.8)',
+    'rgba(255, 51, 255, 0.8)',
+],
+data: {{crime_type_values|safe}}
+}]
+    },
+options: DoughnutOptions
+});
+// plot the crime trend for the last three years in radar graph
+var trend_data = {
+    labels: ["纵火", "抢劫", "入室盗窃", "攻击",  "车辆相关"],
+    datasets: [
+        {
+            label: "2012年",
+            backgroundColor: "rgba(179,181,198,0.2)",
+            borderColor: "rgba(179,181,198,1)",
+            pointBackgroundColor: "rgba(179,181,198,1)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgba(179,181,198,1)",
+            data:  {{majorcrimes12|safe}}
+        },
+        {
+            label: "2013年",
+            backgroundColor: "rgba(255,99,132,0.2)",
+            borderColor: "rgba(255,99,132,1)",
+            pointBackgroundColor: "rgba(255,99,132,1)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgba(255,99,132,1)",
+            data: {{majorcrimes13|safe}}
+        },
+        {
+            label: "2014年",
+            backgroundColor: "rgba(0, 191, 255, 0.2)",
+            borderColor: "rgba(0, 191, 255, 0.8)",
+            pointBackgroundColor: "rgba(0, 191, 255, 0.8)",
+            pointBorderColor: "#fff",
+            pointHoverBackgroundColor: "#fff",
+            pointHoverBorderColor: "rgba(0, 191, 255, 0.8)",
+            data: {{majorcrimes14|safe}}
+        }
+    ]
+};
+var ctx3 = document.getElementById("CrimeTrendChart").getContext('2d');
+var myRadarChart = new Chart(ctx3, {
+    type: 'radar',
+    data: trend_data,
+    options: {
+            scale: {
+                reverse: false,
+                ticks: {
+                    beginAtZero: true
+                }
+            }
+    }
+});
+    </script>
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,6 @@
+{
+    "dev": {
+        "app_function": "my_app.app", 
+        "s3_bucket": "iiot-test1"
+    }
+}
